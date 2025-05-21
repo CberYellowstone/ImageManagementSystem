@@ -1,0 +1,8 @@
+/* Styles for Image Management System */
+
+.thumbnail-selected {
+    -fx-background-color: lightblue;
+    -fx-border-color: blue;
+    -fx-border-width: 1;
+    -fx-border-style: solid;
+}

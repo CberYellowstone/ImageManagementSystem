@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TreeView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Button?>
+
+<BorderPane fx:id="rootBorderPane" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="edu.scau.imagemanagementsystem.controllers.MainViewController"
+            stylesheets="/edu/scau/imagemanagementsystem/css/styles.css">
+    <left>
+        <ScrollPane fitToWidth="true" fitToHeight="true">
+            <TreeView fx:id="directoryTreeView"/>
+        </ScrollPane>
+    </left>
+    <center>
+        <BorderPane>
+            <top>
+                <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 5;">
+                    <Label fx:id="currentDirectoryLabel" text="当前目录:"/>
+                    <Label fx:id="imageCountInDirLabel" text="0 张图片"/>
+                </HBox>
+            </top>
+            <center>
+                <AnchorPane fx:id="imagePreviewAnchorPane">
+                    <ScrollPane fx:id="imageScrollPane" fitToWidth="true" fitToHeight="true" AnchorPane.topAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0">
+                        <FlowPane fx:id="imagePreviewPane" hgap="10" vgap="10" style="-fx-padding: 10;"/>
+                    </ScrollPane>
+                </AnchorPane>
+            </center>
+        </BorderPane>
+    </center>
+    <bottom>
+        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 5; -fx-border-style: solid hidden hidden hidden; -fx-border-width: 1; -fx-border-color: lightgray;">
+            <Label fx:id="statusLabel" text="状态信息"/>
+            <HBox HBox.hgrow="ALWAYS"/> <!-- Spacer -->
+            <Button fx:id="slideshowButton" text="幻灯片播放"/>
+        </HBox>
+    </bottom>
+</BorderPane> 
