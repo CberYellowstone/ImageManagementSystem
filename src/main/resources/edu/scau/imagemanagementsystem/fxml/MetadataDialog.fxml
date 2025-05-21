@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="edu.scau.imagemanagementsystem.controllers.MetadataDialogController"
+      spacing="10" alignment="TOP_LEFT" style="-fx-padding: 10;">
+    <Label text="全部元数据:" />
+    <TextArea fx:id="allMetadataArea" wrapText="true" editable="false" prefRowCount="15" VBox.vgrow="ALWAYS" />
+
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="关闭" onAction="#handleCancel" />
+    </HBox>
+</VBox> 

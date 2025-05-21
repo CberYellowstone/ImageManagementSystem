@@ -4,6 +4,7 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,18 +28,24 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TextField;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -85,6 +92,12 @@ public class MainViewController {
     private static final double THUMBNAIL_WIDTH = 120;
     private static final double THUMBNAIL_HEIGHT = 120;
 
+    // 添加搜索与排序控件引用
+    @FXML
+    private TextField searchTextField;
+    @FXML
+    private ComboBox<String> sortComboBox;
+
     @FXML
     private void initialize() {
         initializeDirectoryTree();
@@ -128,6 +141,27 @@ public class MainViewController {
                 }
             }
             blankContextMenu.show(imagePreviewPane, event.getScreenX(), event.getScreenY());
+        });
+
+        // 高级搜索
+        searchTextField.textProperty().addListener((obs, old, ne) -> filterAndSort());
+        // 排序选项
+        sortComboBox.getItems().addAll("名称升序", "名称降序", "大小升序", "大小降序", "日期升序", "日期降序");
+        sortComboBox.getSelectionModel().selectFirst();
+        sortComboBox.getSelectionModel().selectedItemProperty().addListener((obs, old, ne) -> filterAndSort());
+        // 键盘快捷键
+        Platform.runLater(() -> {
+            Scene scene = directoryTreeView.getScene();
+            if (scene != null) {
+                scene.getAccelerators().put(new KeyCodeCombination(KeyCode.DELETE), this::handleDeleteSelected);
+                scene.getAccelerators().put(new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN),
+                        this::handleCopySelected);
+                scene.getAccelerators().put(new KeyCodeCombination(KeyCode.V, KeyCombination.CONTROL_DOWN),
+                        this::handlePasteSelected);
+                scene.getAccelerators().put(new KeyCodeCombination(KeyCode.F2), this::handleRenameSelected);
+                scene.getAccelerators().put(new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN),
+                        () -> searchTextField.requestFocus());
+            }
         });
     }
 
@@ -259,11 +293,13 @@ public class MainViewController {
             List<File> imageFiles = imageFilesTask.getValue();
             Platform.runLater(() -> {
                 if (imageFiles != null) {
+                    imageFileItemObservableList.clear();
                     for (File imageFile : imageFiles) {
                         ImageFileItem item = new ImageFileItem(imageFile);
                         imageFileItemObservableList.add(item);
-                        createAndAddThumbnailNode(item);
                     }
+                    // 过滤并排序后渲染缩略图
+                    filterAndSort();
                     imageCountInDirLabel.setText(imageFiles.size() + " 张图片");
                     calculateAndDisplayTotalSize(imageFiles);
                 } else {
@@ -516,7 +552,13 @@ public class MainViewController {
             }
         });
 
-        contextMenu.getItems().addAll(deleteItem, copyItem, renameItem, pasteItem, refreshItem);
+        contextMenu.getItems().addAll(deleteItem, copyItem, renameItem);
+        if (item != null) {
+            MenuItem viewMetaItem = new MenuItem("查看元数据");
+            viewMetaItem.setOnAction(e -> handleViewMetadata(item));
+            contextMenu.getItems().add(viewMetaItem);
+        }
+        contextMenu.getItems().addAll(pasteItem, refreshItem);
         // 每次显示时更新粘贴按钮的可用状态
         contextMenu.setOnShowing(event -> {
             boolean dirSelected = directoryTreeView.getSelectionModel().getSelectedItem() != null;
@@ -775,5 +817,59 @@ public class MainViewController {
         }
         // 选中目标节点，触发右侧刷新
         directoryTreeView.getSelectionModel().select(current);
+    }
+
+    // 查看元数据
+    private void handleViewMetadata(ImageFileItem item) {
+        Window owner = imagePreviewPane.getScene().getWindow();
+        FxmlUtils.openMetadataDialog(item.getFile(), owner);
+    }
+
+    // 过滤并排序渲染
+    private void filterAndSort() {
+        String keyword = searchTextField.getText();
+        String lower = (keyword == null) ? "" : keyword.toLowerCase();
+        String sortOpt = sortComboBox.getSelectionModel().getSelectedItem();
+        // 保留目录节点
+        java.util.List<Node> dirNodes = imagePreviewPane.getChildren().stream()
+                .filter(n -> n.getUserData() instanceof File)
+                .collect(Collectors.toList());
+        imagePreviewPane.getChildren().clear();
+        dirNodes.forEach(imagePreviewPane.getChildren()::add);
+        // 过滤
+        java.util.List<ImageFileItem> filtered = imageFileItemObservableList.stream()
+                .filter(item -> item.getName().toLowerCase().contains(lower))
+                .collect(Collectors.<ImageFileItem>toList());
+        // 排序
+        if (sortOpt != null) {
+            switch (sortOpt) {
+                case "名称升序":
+                    filtered.sort(Comparator.comparing(ImageFileItem::getName, String.CASE_INSENSITIVE_ORDER));
+                    break;
+                case "名称降序":
+                    filtered.sort(
+                            Comparator.comparing(ImageFileItem::getName, String.CASE_INSENSITIVE_ORDER).reversed());
+                    break;
+                case "大小升序":
+                    filtered.sort(Comparator.comparingLong((ImageFileItem item) -> item.getFile().length()));
+                    break;
+                case "大小降序":
+                    filtered.sort(Comparator.comparingLong((ImageFileItem item) -> item.getFile().length()).reversed());
+                    break;
+                case "日期升序":
+                    filtered.sort(Comparator.comparingLong((ImageFileItem item) -> item.getFile().lastModified()));
+                    break;
+                case "日期降序":
+                    filtered.sort(
+                            Comparator.comparingLong((ImageFileItem item) -> item.getFile().lastModified()).reversed());
+                    break;
+                default:
+                    break;
+            }
+        }
+        // 添加缩略图
+        for (ImageFileItem item : filtered) {
+            createAndAddThumbnailNode(item);
+        }
     }
 }

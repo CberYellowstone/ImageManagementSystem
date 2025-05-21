@@ -1,11 +1,13 @@
 package edu.scau.imagemanagementsystem.utils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import edu.scau.imagemanagementsystem.controllers.MetadataDialogController;
 import edu.scau.imagemanagementsystem.controllers.RenameDialogController;
 import edu.scau.imagemanagementsystem.controllers.SlideshowController;
 import edu.scau.imagemanagementsystem.model.BatchRenameParams;
@@ -76,6 +78,30 @@ public class FxmlUtils {
             e.printStackTrace();
             UiUtils.showErrorDialog("错误", "无法打开批量重命名窗口", e.getMessage());
             return Optional.empty();
+        }
+    }
+
+    /**
+     * 打开元数据查看窗口
+     */
+    public static void openMetadataDialog(File imageFile, Window owner) {
+        try {
+            FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(
+                    FxmlUtils.class.getResource("/edu/scau/imagemanagementsystem/fxml/MetadataDialog.fxml")));
+            Parent root = loader.load();
+            MetadataDialogController controller = loader.getController();
+            controller.initializeData(imageFile);
+            Stage dialog = new Stage();
+            dialog.setTitle("查看元数据 - " + imageFile.getName());
+            dialog.initModality(Modality.APPLICATION_MODAL);
+            if (owner != null) {
+                dialog.initOwner(owner);
+            }
+            dialog.setScene(new Scene(root));
+            dialog.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
+            UiUtils.showErrorDialog("错误", "无法打开元数据窗口", e.getMessage());
         }
     }
 }
