@@ -21,15 +21,31 @@ import javafx.stage.Window;
 
 public class FxmlUtils {
 
+    /**
+     * 加载 FXML 文件并可选地初始化其控制器。
+     *
+     * @param fxmlPath              FXML 文件的路径
+     * @param controllerInitializer 一个 Consumer，用于在加载后初始化控制器，可以为 null
+     * @param <T>                   控制器的类型
+     * @return 加载的 FXML 文件的控制器
+     * @throws IOException 如果加载 FXML 文件失败
+     */
     public static <T> T loadFxml(String fxmlPath, Consumer<Object> controllerInitializer) throws IOException {
         FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(FxmlUtils.class.getResource(fxmlPath)));
         Object controller = loader.getController();
-        if (controllerInitializer != null) {
+        if (controllerInitializer != null && controller != null) {
             controllerInitializer.accept(controller);
         }
-        return loader.getController();
+        return (T) controller; // Return the controller instance
     }
 
+    /**
+     * 打开幻灯片播放窗口。
+     *
+     * @param images     要显示的图片列表
+     * @param startImage 幻灯片开始时显示的图片
+     * @param owner      父窗口，可以为 null
+     */
     public static void openSlideshowWindow(List<ImageFileItem> images, ImageFileItem startImage, Window owner) {
         try {
             FXMLLoader loader = new FXMLLoader(Objects
@@ -56,6 +72,12 @@ public class FxmlUtils {
         }
     }
 
+    /**
+     * 打开批量重命名对话框。
+     *
+     * @param owner 父窗口，可以为 null
+     * @return一个包含 BatchRenameParams 的 Optional，如果用户确认则包含参数，否则为空
+     */
     public static Optional<BatchRenameParams> openBatchRenameDialog(Window owner) {
         try {
             FXMLLoader loader = new FXMLLoader(Objects.requireNonNull(
@@ -83,6 +105,9 @@ public class FxmlUtils {
 
     /**
      * 打开元数据查看窗口
+     *
+     * @param imageFile 要查看元数据的图片文件
+     * @param owner     父窗口，可以为 null
      */
     public static void openMetadataDialog(File imageFile, Window owner) {
         try {

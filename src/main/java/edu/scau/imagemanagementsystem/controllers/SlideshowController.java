@@ -53,6 +53,7 @@ public class SlideshowController {
         this.imagesToShow = images;
         this.currentIndex = images.indexOf(startImage);
         if (this.currentIndex < 0 && !images.isEmpty()) { // Fallback if startImage not found
+            // 如果未找到起始图片且图片列表不为空，则默认显示第一张图片
             this.currentIndex = 0;
         }
         this.imageLoadService = new ImageLoadService();
@@ -65,10 +66,13 @@ public class SlideshowController {
     public void initialize() {
         slideshowImageView.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
+                // 处理键盘按键事件
                 newScene.setOnKeyPressed(this::handleKeyPress);
+                // 绑定图片视图的宽高以适应窗口大小
                 slideshowImageView.fitWidthProperty().bind(rootPane.widthProperty().subtract(20));
                 slideshowImageView.fitHeightProperty().bind(
                         rootPane.heightProperty().subtract(controlBar.heightProperty()).subtract(20));
+                // 处理鼠标滚轮事件以进行缩放
                 newScene.setOnScroll((ScrollEvent se) -> {
                     if (se.getDeltaY() > 0) {
                         handleZoomIn();
@@ -83,12 +87,16 @@ public class SlideshowController {
 
     private void handleKeyPress(KeyEvent event) {
         if (event.getCode() == KeyCode.LEFT) {
+            // 左箭头键：显示上一张图片
             showPreviousImage();
         } else if (event.getCode() == KeyCode.RIGHT) {
+            // 右箭头键：显示下一张图片
             showNextImage();
         } else if (event.getCode() == KeyCode.SPACE) {
+            // 空格键：播放/暂停幻灯片
             handlePlayPause();
         } else if (event.getCode() == KeyCode.ESCAPE) {
+            // ESC键：关闭窗口
             closeWindow();
         }
     }
@@ -133,6 +141,7 @@ public class SlideshowController {
             currentIndex++;
             loadImageAtIndex(currentIndex);
         } else {
+            // 如果是最后一张，并且正在播放，则停止播放
             if (isPlaying) {
                 handlePlayPause();
             }
@@ -147,6 +156,7 @@ public class SlideshowController {
             currentIndex++;
             loadImageAtIndex(currentIndex);
         } else {
+            // 自动播放到最后一张时，停止时间轴并更新按钮状态
             slideshowTimeline.stop();
             playPauseButton.setText("播放");
             isPlaying = false;
@@ -165,7 +175,8 @@ public class SlideshowController {
             slideshowTimeline.play();
             playPauseButton.setText("暂停");
             if (currentIndex == imagesToShow.size() - 1) {
-                currentIndex = -1;
+                // 如果当前是最后一张图片，并且用户点击播放，则从头开始播放
+                currentIndex = -1; // showNextImageAutomatic会将其增加到0
                 showNextImageAutomatic();
             }
         }

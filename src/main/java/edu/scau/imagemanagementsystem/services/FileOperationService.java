@@ -7,13 +7,18 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.scau.imagemanagementsystem.utils.FileUtils;
-
 import edu.scau.imagemanagementsystem.model.BatchRenameParams;
+import edu.scau.imagemanagementsystem.utils.FileUtils;
 import javafx.concurrent.Task;
 
 public class FileOperationService {
 
+    /**
+     * 异步删除文件列表。
+     *
+     * @param files 要删除的文件列表
+     * @return 一个 Task，其结果为 boolean 值，表示是否所有文件都成功删除
+     */
     public Task<Boolean> deleteFilesAsync(List<File> files) {
         return new Task<>() {
             @Override
@@ -33,6 +38,13 @@ public class FileOperationService {
         };
     }
 
+    /**
+     * 异步将文件列表粘贴到目标目录。
+     *
+     * @param filesToCopy     要复制的文件列表
+     * @param targetDirectory 目标目录
+     * @return 一个 Task，其结果为成功粘贴的文件列表
+     */
     public Task<List<File>> pasteFilesAsync(List<File> filesToCopy, File targetDirectory) {
         return new Task<>() {
             @Override
@@ -64,6 +76,13 @@ public class FileOperationService {
         };
     }
 
+    /**
+     * 异步重命名单个文件。
+     *
+     * @param oldFile         要重命名的原始文件
+     * @param newFileNameBase 新的基本文件名（不含扩展名）
+     * @return 一个 Task，其结果为 boolean 值，表示重命名是否成功
+     */
     public Task<Boolean> renameFileAsync(File oldFile, String newFileNameBase) {
         return new Task<>() {
             @Override
@@ -85,6 +104,13 @@ public class FileOperationService {
         };
     }
 
+    /**
+     * 异步批量重命名文件列表。
+     *
+     * @param files  要重命名的文件列表
+     * @param params 批量重命名参数
+     * @return 一个 Task，其结果为 boolean 值，表示是否所有符合条件的文件都成功重命名
+     */
     public Task<Boolean> batchRenameFilesAsync(List<File> files, BatchRenameParams params) {
         return new Task<>() {
             @Override

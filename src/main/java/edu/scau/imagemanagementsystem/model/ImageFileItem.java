@@ -10,12 +10,20 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.image.Image;
 
+/**
+ * 代表一个图片文件项，包含文件对象、名称、缩略图和选中状态的 JavaFX 属性。
+ */
 public class ImageFileItem {
-    private final File file;
-    private final StringProperty name;
-    private final ObjectProperty<Image> thumbnail; // For thumbnail image
-    private final BooleanProperty selected;
+    private final File file; // 原始文件对象
+    private final StringProperty name; // 文件名属性
+    private final ObjectProperty<Image> thumbnail; // 缩略图属性 (异步加载)
+    private final BooleanProperty selected; // 选中状态属性
 
+    /**
+     * 构造一个 ImageFileItem 对象。
+     *
+     * @param file 关联的图片文件
+     */
     public ImageFileItem(File file) {
         this.file = file;
         this.name = new SimpleStringProperty(file.getName());
